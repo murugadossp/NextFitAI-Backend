@@ -180,46 +180,63 @@ python utilities/monitor_analysis_status.py <analysis_id_from_step_1>
 
 ## 💻 Frontend Integration
 
-### For Frontend Developers
+### For Streamlit Developers
 
-**📖 Complete Integration Guide**: [`docs/FRONTEND_API_GUIDE.md`](docs/FRONTEND_API_GUIDE.md)
-- React hooks and components
-- TypeScript definitions
-- Error handling patterns
+**📖 Complete Streamlit Guide**: [`docs/STREAMLIT_INTEGRATION_GUIDE.md`](docs/STREAMLIT_INTEGRATION_GUIDE.md)
+- Complete Streamlit app examples
+- API integration patterns
+- Session state management
 - Caching strategies
-- Testing examples
+- Error handling
+- Deployment options
 
-**🧪 Interactive API Tester**: [`docs/api-test-example.html`](docs/api-test-example.html)
-- Open in browser to test API endpoints
+**🚀 Ready-to-Run Demo**: [`docs/streamlit_demo.py`](docs/streamlit_demo.py)
+- Complete working Streamlit application
 - Pre-filled with sample data
-- Real-time health monitoring
-- Complete workflow demonstration
+- Real-time progress tracking
+- Results visualization
+- Export functionality
 
-### Quick Frontend Examples
+**🧪 Browser API Tester**: [`docs/api-test-example.html`](docs/api-test-example.html)
+- Interactive API testing in browser
+- No installation required
 
-**Submit Analysis (JavaScript)**:
-```javascript
-const response = await fetch('https://febwc3ocqb.execute-api.us-east-1.amazonaws.com/prod/analyze', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    analysis_id: crypto.randomUUID(),
-    resume_text: "Your resume here...",
-    job_description: "Job description here..."
-  })
-});
+### Quick Streamlit Examples
+
+**Run the Demo App**:
+```bash
+pip install streamlit requests
+streamlit run docs/streamlit_demo.py
 ```
 
-**Get Results (JavaScript)**:
-```javascript
-const response = await fetch(`https://febwc3ocqb.execute-api.us-east-1.amazonaws.com/prod/results/${analysisId}`);
-const data = await response.json();
+**Submit Analysis (Python)**:
+```python
+import requests
+import uuid
+
+response = requests.post('https://febwc3ocqb.execute-api.us-east-1.amazonaws.com/prod/analyze', 
+    json={
+        "analysis_id": str(uuid.uuid4()),
+        "resume_text": "Your resume here...",
+        "job_description": "Job description here..."
+    })
 ```
 
-**Health Check (JavaScript)**:
-```javascript
-const response = await fetch('https://febwc3ocqb.execute-api.us-east-1.amazonaws.com/prod/health');
-const health = await response.json();
+**Get Results (Python)**:
+```python
+response = requests.get(f'https://febwc3ocqb.execute-api.us-east-1.amazonaws.com/prod/results/{analysis_id}')
+data = response.json()
+```
+
+**Streamlit Integration**:
+```python
+import streamlit as st
+
+if st.button("Analyze Resume"):
+    with st.spinner("Analyzing..."):
+        result = submit_analysis(resume_text, job_description)
+    st.success("Analysis complete!")
+    st.json(result)
 ```
 
 ## 📊 Monitoring
@@ -291,7 +308,9 @@ NextFitAI-Backend/
 │   ├── monitor_analysis_status.py
 │   └── __init__.py
 ├── docs/                      # Frontend integration documentation
-│   ├── FRONTEND_API_GUIDE.md # Complete frontend integration guide
+│   ├── STREAMLIT_INTEGRATION_GUIDE.md # Complete Streamlit integration guide
+│   ├── streamlit_demo.py     # Ready-to-run Streamlit application
+│   ├── FRONTEND_API_GUIDE.md # React/TypeScript integration guide
 │   └── api-test-example.html # Interactive API test page
 ├── design_docs/              # Architecture documentation
 ├── template.yaml             # SAM template
