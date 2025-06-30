@@ -89,6 +89,31 @@ Resources:
               Action:
                 - bedrock:InvokeAgent
               Resource: !Sub "arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:agent/${BedrockAgentId}"
+
+  GetAnalysisFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "NextFitAI-GetAnalysis-${Environment}"
+      CodeUri: src/get_analysis/
+      Handler: lambda_function.lambda_handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref AnalysisTrackingTable
+        - S3ReadPolicy:
+            BucketName: !Ref RawInputsBucket
+      Events:
+        GetResults:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NextFitAIApi
+            Path: /results/{analysis_id}
+            Method: get
+        HealthCheck:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NextFitAIApi
+            Path: /health
+            Method: get
   # DynamoDB Table
   AnalysisTrackingTable:
     Type: AWS::DynamoDB::Table

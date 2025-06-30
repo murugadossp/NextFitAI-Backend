@@ -4,7 +4,7 @@ A serverless backend for NextFitAI, an AI-powered resume coaching application bu
 
 ## 🚀 Architecture
 
-The application consists of two main Lambda functions:
+The application consists of three main Lambda functions:
 
 1. **SubmitAnalysisFunction** - Handles initial resume submission
    - Validates input data
@@ -16,6 +16,11 @@ The application consists of two main Lambda functions:
    - Retrieves data from S3
    - Calls AWS Bedrock Agent for AI analysis (or mock analysis)
    - Updates DynamoDB with results
+
+3. **GetAnalysisFunction** - Retrieves analysis results and system health
+   - Provides API access to analysis results
+   - Handles health check monitoring
+   - Formats results according to API specification
 
 ## 📋 Prerequisites
 
@@ -96,14 +101,63 @@ Submit a resume for analysis.
 }
 ```
 
+### GET /results/{analysis_id}
+Retrieve analysis results for a specific analysis.
+
+**Response (Completed):**
+```json
+{
+  "status": "completed",
+  "results": {
+    "match_score": 85,
+    "missing_skills": ["Python", "AWS", "Docker"],
+    "recommendations": [
+      "Add quantified achievements (e.g., 'Increased efficiency by 25%')",
+      "Include relevant keywords from the job description"
+    ],
+    "confidence_score": 92,
+    "analysis_timestamp": "2025-06-29T10:35:00Z"
+  }
+}
+```
+
+**Response (Processing):**
+```json
+{
+  "status": "processing",
+  "message": "Analysis is currently being processed"
+}
+```
+
+### GET /health
+System health check endpoint.
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2025-06-29T10:00:00Z",
+  "checks": {
+    "dynamodb": {"status": "healthy", "message": "Connected successfully"},
+    "s3": {"status": "healthy", "message": "Bucket accessible"},
+    "environment": {"status": "healthy", "message": "All required variables present"}
+  }
+}
+```
+
 ## 🧪 Testing
 
-### 1. Test API Endpoint
+### 1. Test Submit Analysis API
 ```bash
 python tests/test_submit_analysis_api.py
 ```
 
-### 2. Check Analysis Status
+### 2. Test Get Analysis API
+```bash
+python tests/test_get_analysis_api.py
+```
+
+### 3. Check Analysis Status (CLI)
 ```bash
 # List recent analyses
 python utilities/monitor_analysis_status.py
@@ -112,13 +166,16 @@ python utilities/monitor_analysis_status.py
 python utilities/monitor_analysis_status.py <analysis_id>
 ```
 
-### 3. Example Test Flow
+### 4. Complete Test Flow
 ```bash
 # Submit analysis
 python tests/test_submit_analysis_api.py
 
-# Wait a few seconds, then check status
-python utilities/monitor_analysis_status.py <analysis_id_from_previous_step>
+# Test retrieval endpoints
+python tests/test_get_analysis_api.py
+
+# Monitor via CLI utility
+python utilities/monitor_analysis_status.py <analysis_id_from_step_1>
 ```
 
 ## 📊 Monitoring
@@ -172,13 +229,18 @@ NextFitAI-Backend/
 │   │   ├── lambda_function.py
 │   │   ├── requirements.txt
 │   │   └── README.md         # Submit Analysis API docs
-│   └── process_analysis/
+│   ├── process_analysis/
+│   │   ├── lambda_function.py
+│   │   ├── requirements.txt
+│   │   └── README.md         # Process Analysis function docs
+│   └── get_analysis/
 │       ├── lambda_function.py
 │       ├── requirements.txt
-│       └── README.md         # Process Analysis function docs
+│       └── README.md         # Get Analysis API docs
 ├── tests/                     # API testing suite
 │   ├── README.md             # Testing guide and documentation
 │   ├── test_submit_analysis_api.py
+│   ├── test_get_analysis_api.py
 │   └── __init__.py
 ├── utilities/                 # Monitoring and utility scripts
 │   ├── README.md             # Utilities documentation
