@@ -100,25 +100,25 @@ Submit a resume for analysis.
 
 ### 1. Test API Endpoint
 ```bash
-python test_api.py
+python tests/test_submit_analysis_api.py
 ```
 
 ### 2. Check Analysis Status
 ```bash
 # List recent analyses
-python check_analysis_status.py
+python utilities/monitor_analysis_status.py
 
 # Check specific analysis
-python check_analysis_status.py <analysis_id>
+python utilities/monitor_analysis_status.py <analysis_id>
 ```
 
 ### 3. Example Test Flow
 ```bash
 # Submit analysis
-python test_api.py
+python tests/test_submit_analysis_api.py
 
 # Wait a few seconds, then check status
-python check_analysis_status.py <analysis_id_from_previous_step>
+python utilities/monitor_analysis_status.py <analysis_id_from_previous_step>
 ```
 
 ## 📊 Monitoring
@@ -166,18 +166,30 @@ python check_analysis_status.py <analysis_id_from_previous_step>
 
 ```
 NextFitAI-Backend/
-├── src/
+├── src/                       # Lambda functions
+│   ├── README.md             # Lambda functions overview
 │   ├── submit_analysis/
 │   │   ├── lambda_function.py
-│   │   └── requirements.txt
+│   │   ├── requirements.txt
+│   │   └── README.md         # Submit Analysis API docs
 │   └── process_analysis/
 │       ├── lambda_function.py
-│       └── requirements.txt
-├── template.yaml              # SAM template
-├── samconfig.toml             # SAM configuration
-├── test_api.py               # API testing script
-├── check_analysis_status.py  # Status checking script
-└── README.md                 # This file
+│       ├── requirements.txt
+│       └── README.md         # Process Analysis function docs
+├── tests/                     # API testing suite
+│   ├── README.md             # Testing guide and documentation
+│   ├── test_submit_analysis_api.py
+│   └── __init__.py
+├── utilities/                 # Monitoring and utility scripts
+│   ├── README.md             # Utilities documentation
+│   ├── monitor_analysis_status.py
+│   └── __init__.py
+├── docs/                      # Additional documentation
+├── design_docs/              # Architecture documentation
+├── template.yaml             # SAM template
+├── samconfig.toml            # SAM configuration
+├── .gitignore               # Git ignore rules
+└── README.md                # This file
 ```
 
 ## 🚀 Deployment Information
