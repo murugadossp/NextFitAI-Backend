@@ -1,0 +1,12 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "nextfitai"
+resolve_s3 = true
+s3_prefix = "nextfitai"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+disable_rollback = true
+parameter_overrides = "Environment=\"prod\" BedrockAgentId=\"PLACEHOLDER_AGENT_ID\" BedrockAgentAliasId=\"TSTALIASID\""
+image_repositories = []

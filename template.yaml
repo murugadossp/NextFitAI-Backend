@@ -1,0 +1,144 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: NextFitAI - AI-Powered Resume Coach Backend
+Globals:
+  Function:
+    Timeout: 900
+    MemorySize: 1024
+    Runtime: python3.11
+    Environment:
+      Variables:
+        TRACKING_TABLE: !Ref AnalysisTrackingTable
+        RAW_INPUTS_BUCKET: !Ref RawInputsBucket
+        BEDROCK_REGION: !Ref AWS::Region
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues: [dev, staging, prod]
+  BedrockAgentId:
+    Type: String
+    Description: Bedrock Agent ID for Resume Coach
+    Default: "PLACEHOLDER_AGENT_ID"
+  BedrockAgentAliasId:
+    Type: String
+    Description: Bedrock Agent Alias ID
+    Default: "TSTALIASID"
+Resources:
+  # API Gateway
+  NextFitAIApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Environment
+      Cors:
+        AllowMethods: "'GET,POST,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+      GatewayResponses:
+        DEFAULT_4XX:
+          ResponseTemplates:
+            "application/json": '{"message": $context.error.messageString}'
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+  # Lambda Functions
+  SubmitAnalysisFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "NextFitAI-SubmitAnalysis-${Environment}"
+      CodeUri: src/submit_analysis/
+      Handler: lambda_function.lambda_handler
+      Environment:
+        Variables:
+          PROCESS_FUNCTION: !Sub "NextFitAI-ProcessAnalysis-${Environment}" # Reference the full function name
+      Policies:
+        - S3WritePolicy:
+            BucketName: !Ref RawInputsBucket
+        - DynamoDBWritePolicy:
+            TableName: !Ref AnalysisTrackingTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - lambda:InvokeFunction
+              Resource: !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:NextFitAI-ProcessAnalysis-${Environment}"
+      Events:
+        SubmitAnalysis:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NextFitAIApi
+            Path: /analyze
+            Method: post
+
+  ProcessAnalysisFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "NextFitAI-ProcessAnalysis-${Environment}"
+      CodeUri: src/process_analysis/
+      Handler: lambda_function.lambda_handler
+      Environment:
+        Variables:
+          BEDROCK_AGENT_ID: !Ref BedrockAgentId
+          BEDROCK_AGENT_ALIAS_ID: !Ref BedrockAgentAliasId
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref RawInputsBucket
+        - DynamoDBWritePolicy:
+            TableName: !Ref AnalysisTrackingTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeAgent
+              Resource: !Sub "arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:agent/${BedrockAgentId}"
+  # DynamoDB Table
+  AnalysisTrackingTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "NextFitAI-AnalysisTracking-${Environment}"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: analysis_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: analysis_id
+          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+  # S3 Bucket
+  RawInputsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "nextfitai-raw-inputs-${AWS::AccountId}-${Environment}"
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldAnalysisData
+            Status: Enabled
+            ExpirationInDays: 30 # Keep analysis data for 30 days
+Outputs:
+  ApiGatewayUrl:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${NextFitAIApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}"
+    Export:
+      Name: !Sub "NextFitAI-ApiUrl-${Environment}"
+  AnalysisTrackingTableName:
+    Description: "DynamoDB table name for analysis tracking"
+    Value: !Ref AnalysisTrackingTable
+    Export:
+      Name: !Sub "NextFitAI-TrackingTable-${Environment}"
+  RawInputsBucketName:
+    Description: "S3 bucket name for raw inputs"
+    Value: !Ref RawInputsBucket
+    Export:
+      Name: !Sub "NextFitAI-RawInputsBucket-${Environment}"

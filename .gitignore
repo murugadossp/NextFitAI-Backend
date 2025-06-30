@@ -1,0 +1,44 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# AWS SAM build artifacts
+.aws-sam/
+
+# Environment variables
+.env
+*.env
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# AWS CLI configuration (if present locally)
+.aws/
+
+# Node modules (if any frontend components added later)
+node_modules/
+
+# Backup files
+*.bak
+*.backup
