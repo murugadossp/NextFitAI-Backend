@@ -178,6 +178,50 @@ python tests/test_get_analysis_api.py
 python utilities/monitor_analysis_status.py <analysis_id_from_step_1>
 ```
 
+## 💻 Frontend Integration
+
+### For Frontend Developers
+
+**📖 Complete Integration Guide**: [`docs/FRONTEND_API_GUIDE.md`](docs/FRONTEND_API_GUIDE.md)
+- React hooks and components
+- TypeScript definitions
+- Error handling patterns
+- Caching strategies
+- Testing examples
+
+**🧪 Interactive API Tester**: [`docs/api-test-example.html`](docs/api-test-example.html)
+- Open in browser to test API endpoints
+- Pre-filled with sample data
+- Real-time health monitoring
+- Complete workflow demonstration
+
+### Quick Frontend Examples
+
+**Submit Analysis (JavaScript)**:
+```javascript
+const response = await fetch('https://febwc3ocqb.execute-api.us-east-1.amazonaws.com/prod/analyze', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    analysis_id: crypto.randomUUID(),
+    resume_text: "Your resume here...",
+    job_description: "Job description here..."
+  })
+});
+```
+
+**Get Results (JavaScript)**:
+```javascript
+const response = await fetch(`https://febwc3ocqb.execute-api.us-east-1.amazonaws.com/prod/results/${analysisId}`);
+const data = await response.json();
+```
+
+**Health Check (JavaScript)**:
+```javascript
+const response = await fetch('https://febwc3ocqb.execute-api.us-east-1.amazonaws.com/prod/health');
+const health = await response.json();
+```
+
 ## 📊 Monitoring
 
 ### CloudWatch Logs
@@ -246,7 +290,9 @@ NextFitAI-Backend/
 │   ├── README.md             # Utilities documentation
 │   ├── monitor_analysis_status.py
 │   └── __init__.py
-├── docs/                      # Additional documentation
+├── docs/                      # Frontend integration documentation
+│   ├── FRONTEND_API_GUIDE.md # Complete frontend integration guide
+│   └── api-test-example.html # Interactive API test page
 ├── design_docs/              # Architecture documentation
 ├── template.yaml             # SAM template
 ├── samconfig.toml            # SAM configuration
